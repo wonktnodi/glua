@@ -20,6 +20,8 @@ func (i Int) PrintInt(str string) {
 
 func main() {
 	L := glua.NewState()
+	
+	L.Openlibs()
 
 	var tlib = glua.Libfuncs{
 		"gotest", // lib name
@@ -35,5 +37,8 @@ func main() {
 	}
 	
 	L.Dostring(`gotest.PrintInt(gotest.NewInt(), "Int is")`) 
-	L.Dostring(`gotest.goprintln(true, 123, "lua", gotest.NewInt())`) 
+
+	L.Dofile("test.lua")
+	
+	L.Call("gotest.goprintln", "Call lua function.", 123456)
 }
