@@ -21,4 +21,6 @@ extern void GetInterface(lua_State* L, const void* iface, int i);
 // 设置interface数据
 extern void SetInterface(lua_State* L, void* iface);
 
+extern int FindFuncs(lua_State* L, char* fname);
+
 #endif 

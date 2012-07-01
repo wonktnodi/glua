@@ -1,6 +1,7 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
@@ -123,3 +124,36 @@ void SetInterface(lua_State* L, void* iface)
 	//copy interface value to userdata
 	*ud = *p;
 }
+
+int FindFuncs(lua_State* L, char* fname)
+{
+	char *e;
+	int idx = LUA_GLOBALSINDEX;
+	do {
+		e = strchr(fname, '.');
+		if (e != NULL)
+		{
+			*e = '\0';
+		}
+		lua_getfield(L, idx, fname);
+		if (lua_isnil(L, -1))
+		{
+			lua_pop(L, 1);  /* remove this nil */
+			return -1;
+		}
+		else
+		{
+			if (idx == LUA_GLOBALSINDEX)
+			{
+				idx = -1;
+			}
+			else
+			{
+				lua_remove(L, -2);
+			}
+			fname = e + 1;
+		}
+	} while (e != NULL);
+	return 1;
+}
+

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"runtime"
 	"testing"
+	//rf "reflect"
 )
 
 func TestDofile(t *testing.T) {
@@ -64,10 +65,31 @@ func TestRegLib(t *testing.T) {
 	L := NewState()
 	L.Openlibs()
 	if ok, err := L.Register(&tlib); !ok {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 	if !L.Dofile("testregister.lua") {
 		t.Error("Dofile error.")
 	}
+}
 
+// 
+func TestCall(t *testing.T) {
+	L := NewState()
+	L.Openlibs()
+	if ok, err := L.Register(&tlib); !ok {
+		t.Fatal(err.Error())
+	}
+	if out, ok := L.Call("print", 1, true, "print test"); !ok {
+		t.Error("call print error.", out)
+	}
+	if out, ok := L.Call("gotest.goprintln", 1, true, "print test", getSlice()); !ok {
+		t.Error("call fmt.Println error.", out)
+	}
+	if out, ok := L.Call("gotest.getSlice"); !ok {
+		t.Error("call getSlice error.", out)
+	} else {
+		if slc, ok := out[0].([]int); !ok || slc[0] != 1 {
+			t.Error("getSlice return error.", out[0], slc)
+		}
+	}
 }

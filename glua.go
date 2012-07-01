@@ -114,14 +114,18 @@ func (L *State) Register(lib *Libfuncs) (bool, error) {
 	return true, nil
 }
 
-/*
-func (L *State) Call(fname string, args ...interface{}) (out []interface{}) {
+// 调用lua中的函数，但是只能返回bool, float, string，以及其他go特殊类型，int型被转换为float返回。
+func (L *State) Call(fname string, args ...interface{}) (out []interface{}, ok bool) {
 	fn := C.CString(fname)
 	defer C.free(unsafe.Pointer(fn))
 
 	top := int(C.lua_gettop(L.s))
 
-	C.lua_getfield(L.s, C.LUA_GLOBALSINDEX, fn)
+	if C.int(1) != C.FindFuncs(L.s, fn) {
+		ok = false
+		out = append(out, errors.New(fmt.Sprintf("not find the function(%s).\n", fname)))
+		return 
+	}
 
 	num := len(args)
 	for _, arg := range args {
@@ -133,11 +137,18 @@ func (L *State) Call(fname string, args ...interface{}) (out []interface{}) {
 	C.lua_call(L.s, C.int(num), C.LUA_MULTRET)
 
 	for i := top; i < int(C.lua_gettop(L.s)); i++ {
-		out = append(out, *L.getValueByLuaType(i))
+		ret := L.getValueByLuaType(i)
+		if ret.IsValid() {
+		out = append(out, ret.Interface())
+		} else {
+		out = append(out, nil)
+		}
 	}
+	C.lua_settop(L.s, C.int(top))
+	ok = true
 	return
 }
-*/
+
 
 // 释放lua_stat
 func (L *State) free() {
